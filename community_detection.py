@@ -9,6 +9,19 @@ PASSWORD=input("Entrer le mot de passe neo4j: ")
 
 driver=GraphDatabase.driver(URI,auth=(USER,PASSWORD))
 
+def verifier_connexion(uri, user, password):
+    try:
+        driver = GraphDatabase.driver(uri, auth=(user, password))
+
+        with driver.session() as session:
+            session.run("RETURN 1").single()
+
+        driver.close()
+        return True
+
+    except Exception:
+        return False
+
 def generer_graphe(n,p):
     G=nx.Graph() #graphe non oriente
 
@@ -103,10 +116,13 @@ def creer_personne_et_lien(G):
             )
 
 if __name__ == "__main__":
-    n=int(input("Entrer la taille du graphe: "))
-    G=generer_graphe(n,p=math.log(n)/n)
-    communautes=trouver_cliques_maximales(G)
-    creer_personne_et_lien(G)
-    for i,clique in enumerate(communautes):
-        for n in clique:
-            creer_communaute_et_lien(n,i)
+    if verifier_connexion(URI, USER, PASSWORD):
+        n=int(input("Entrer la taille du graphe: "))
+        G=generer_graphe(n,p=math.log(n)/n)
+        communautes=trouver_cliques_maximales(G)
+        creer_personne_et_lien(G)
+        for i,clique in enumerate(communautes):
+            for n in clique:
+                creer_communaute_et_lien(n,i)
+    else:
+        print("Connexion refusée")
